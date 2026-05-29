@@ -1,0 +1,1430 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>RESIDENCIAL FUN — Apresentação Santer</title>
+<link rel="icon" type="image/x-icon" href="assets/img_0000.ico" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/core@5/index.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/markers-plugin@5/index.min.css" />
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.183.2/build/three.module.js",
+    "@photo-sphere-viewer/core": "https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/core@5/index.module.js",
+    "@photo-sphere-viewer/markers-plugin": "https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/markers-plugin@5/index.module.js"
+  }
+}
+</script>
+<style>
+  :root {
+    --bg:#0f172a; --panel:#111827; --text:#f1f5f9; --muted:#94a3b8;
+    --accent:#00bf9c; --accent-hover:#00a387;
+    --drawer-w:280px; --header-h:64px;
+  }
+  * { box-sizing:border-box; }
+  html,body { margin:0; padding:0; height:100%; background:var(--bg); color:var(--text);
+               font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; }
+
+  /* ---- Header ---- */
+  header { height:var(--header-h); padding:0 24px 0 12px;
+            background:rgba(0,0,0,0.62); display:flex; align-items:center; gap:12px;
+            border-bottom:1px solid rgba(255,255,255,0.08);
+            position:sticky; top:0; z-index:10;
+            backdrop-filter:blur(10px); }
+  .menu-btn { flex-shrink:0; background:transparent; border:1px solid rgba(255,255,255,0.2); color:#fff;
+               width:40px; height:40px; border-radius:8px; cursor:pointer; font-size:20px;
+               display:flex; align-items:center; justify-content:center; transition:0.15s; }
+  .menu-btn:hover { background:rgba(255,255,255,0.1); }
+  .brand-logo { height:36px; width:auto; max-width:min(220px,38vw); object-fit:contain; flex-shrink:0; }
+  .brand-text { display:flex; flex-direction:column; min-width:0; }
+  .brand-text h1 { margin:0; font-size:0.95rem; font-weight:500; white-space:nowrap;
+                   overflow:hidden; text-overflow:ellipsis; line-height:1.2; }
+  .brand-text .sub { color:var(--muted); font-size:0.75rem; white-space:nowrap;
+                      overflow:hidden; text-overflow:ellipsis; }
+  header nav { margin-left:auto; flex-shrink:0; display:flex; gap:6px; }
+  header nav button { background:transparent; color:var(--text); border:1px solid rgba(255,255,255,0.2);
+                       padding:7px 13px; border-radius:8px; cursor:pointer; font-size:0.83rem; transition:0.15s; }
+  header nav button:hover { background:rgba(255,255,255,0.08); }
+  header nav button.active { background:var(--accent); border-color:var(--accent); color:#001512; font-weight:600; }
+
+  /* ---- Drawer ---- */
+  .drawer { position:fixed; top:0; left:-100%; width:var(--drawer-w); height:100vh;
+             background:#0a1422; border-right:1px solid rgba(255,255,255,0.07);
+             transition:left 0.25s ease; z-index:300; display:flex; flex-direction:column; }
+  .drawer.open { left:0; }
+  .drawer-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); opacity:0; pointer-events:none;
+                     transition:opacity 0.2s; z-index:290; }
+  .drawer-overlay.open { opacity:1; pointer-events:auto; }
+  .drawer-head { padding:14px 16px 10px;
+                  border-bottom:1px solid rgba(255,255,255,0.06);
+                  display:flex; flex-direction:column; gap:8px; }
+  .drawer-head-row { display:flex; align-items:center; gap:10px; }
+  .drawer-close { background:transparent; border:none; color:var(--muted); cursor:pointer;
+                   font-size:18px; line-height:1; padding:2px 4px; margin-left:auto; }
+  .drawer-close:hover { color:var(--text); }
+  .drawer-head img { height:28px; width:auto; max-width:180px; object-fit:contain; }
+  .drawer-head h2 { margin:0; font-size:0.85rem; font-weight:500; color:var(--muted); }
+  .drawer-tree-actions { display:flex; gap:6px; flex-wrap:wrap; }
+  .drawer-tree-actions button { background:transparent; border:1px solid rgba(255,255,255,0.18);
+                                 color:var(--muted); font-size:0.7rem; padding:3px 8px;
+                                 border-radius:5px; cursor:pointer; }
+  .drawer-tree-actions button:hover { color:var(--text); border-color:rgba(255,255,255,0.35); }
+  .drawer-body { flex:1; overflow:auto; padding:6px 0; }
+  .drawer-section { padding:8px 14px 3px; color:var(--muted); font-size:0.7rem;
+                     text-transform:uppercase; letter-spacing:1px; }
+  .drawer-item { display:flex; align-items:center; gap:7px; padding:8px 14px 8px 16px;
+                  cursor:pointer; transition:0.12s; border-left:3px solid transparent;
+                  color:var(--text); font-size:0.87rem; user-select:none; }
+  .drawer-item:hover { background:rgba(255,255,255,0.04); }
+  .drawer-item.active { background:rgba(0,191,156,0.12); border-left-color:var(--accent); }
+  .drawer-item.child { padding-left:32px; font-size:0.81rem; color:var(--muted); }
+  .drawer-item.child:hover { color:var(--text); }
+  .drawer-item.child.active { color:var(--accent); font-weight:600;
+                               background:rgba(0,191,156,0.22); border-left-color:var(--accent);
+                               box-shadow:inset 0 0 0 1px rgba(0,191,156,0.35); }
+  .drawer-item.child.active .num { background:var(--accent); color:#001512;
+                                    box-shadow:0 0 0 3px rgba(0,191,156,0.28); }
+  .drawer-item.child.active::after { content:''; width:8px; height:8px; border-radius:50%;
+                                       background:var(--accent); margin-left:auto;
+                                       box-shadow:0 0 0 4px rgba(0,191,156,0.22);
+                                       animation:pulse-here 1.6s ease-in-out infinite; }
+  @keyframes pulse-here { 0%,100% { opacity:1; transform:scale(1); }
+                           50% { opacity:0.55; transform:scale(0.78); } }
+  .drawer-item.tour.active { color:var(--accent); }
+  .drawer-item .num { background:rgba(0,191,156,0.18); color:var(--accent); border-radius:50%;
+                       width:20px; height:20px; display:flex; align-items:center; justify-content:center;
+                       font-size:0.72rem; font-weight:700; flex-shrink:0; }
+  .drawer-item.tour { font-weight:500; }
+  .drawer-item.tour .icon { color:var(--accent); }
+  .drawer-toggle { width:20px; height:20px; border:none; background:transparent; color:var(--muted);
+                    cursor:pointer; font-size:0.8rem; flex-shrink:0; padding:0; line-height:1; }
+  .drawer-toggle:hover { color:var(--text); }
+  .drawer-toggle.placeholder { visibility:hidden; pointer-events:none; }
+  .drawer-children { display:none; }
+  .drawer-children.open { display:block; }
+
+  /* ---- Main / hero ---- */
+  main { padding:24px; max-width:1400px; margin:0 auto; }
+  .hero { background:linear-gradient(135deg,rgba(0,191,156,0.12) 0%,rgba(0,0,0,0) 55%);
+           padding:32px 24px; border-radius:16px; margin-bottom:28px;
+           border:1px solid rgba(255,255,255,0.05); }
+  .hero h2 { margin:0; font-size:2rem; font-weight:300; letter-spacing:0.5px; }
+  .hero .sub { color:var(--accent); font-size:1rem; margin-top:4px; letter-spacing:0.3px; }
+  .hero .desc { color:var(--text); opacity:0.85; margin-top:14px; line-height:1.6;
+                 max-width:900px; white-space:pre-wrap; }
+  .ficha { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+            gap:12px 24px; margin-top:22px; }
+  .ficha-item .rotulo { color:var(--muted); font-size:0.75rem; text-transform:uppercase; letter-spacing:1px; }
+  .ficha-item .valor { color:var(--text); margin-top:2px; font-weight:500; }
+
+  .section-title { font-size:1.5rem; font-weight:300; margin:0 0 18px; letter-spacing:0.3px; }
+  .albums { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:18px; }
+  .album { background:var(--panel); border-radius:14px; overflow:hidden; cursor:pointer;
+            transition:0.2s; border:1px solid rgba(255,255,255,0.05); }
+  .album:hover { transform:translateY(-2px); box-shadow:0 10px 30px rgba(0,0,0,0.4); }
+  .album .cover { aspect-ratio:16/10; background:#000 center/cover no-repeat; }
+  .album .body { padding:14px 16px; }
+  .album h3 { margin:0; font-size:1.05rem; font-weight:500; }
+  .album p { margin:4px 0 0; color:var(--muted); font-size:0.85rem; }
+  .tour-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:18px; }
+  .tour-card { background:var(--panel); border-radius:14px; overflow:hidden; cursor:pointer;
+                transition:0.2s; border:1px solid rgba(255,255,255,0.05); }
+  .tour-card:hover { transform:translateY(-2px); box-shadow:0 10px 30px rgba(0,0,0,0.4); }
+  .tour-card .preview { aspect-ratio:16/10; background:#000 center/contain no-repeat; position:relative; }
+  .tour-card .preview .badge { position:absolute; bottom:10px; right:10px;
+                                background:rgba(0,0,0,0.65); padding:4px 10px;
+                                border-radius:20px; font-size:0.75rem; }
+  .tour-card .body { padding:14px 16px; }
+
+  /* ---- Modais ---- */
+  .modal { position:fixed; inset:0; background:rgba(0,0,0,0.96); display:none; z-index:50; }
+  .modal.open { display:flex; flex-direction:column; }
+  .modal-header { display:flex; justify-content:space-between; align-items:center;
+                   padding:12px 22px; color:#fff; background:rgba(0,0,0,0.5); gap:12px; }
+  .modal-header .left { display:flex; align-items:center; gap:10px; }
+  .modal-header .close { background:transparent; border:1px solid #fff; color:#fff;
+                          padding:6px 14px; border-radius:8px; cursor:pointer; }
+  .modal-body { flex:1; min-height:0; position:relative; display:flex; }
+  .album-modal-body { overflow:auto; padding:18px; display:grid;
+                       grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+                       gap:14px; align-content:start; width:100%; }
+  .album-modal-body img { width:100%; aspect-ratio:4/3; object-fit:cover;
+                           border-radius:10px; cursor:zoom-in; }
+
+  /* ---- Tour ---- */
+  .tour-modal { position:relative; flex:1; overflow:hidden; }
+  #tour-planta-wrap { position:absolute; inset:0; background:#000; overflow:hidden;
+                      cursor:grab; touch-action:none; z-index:1; }
+  #tour-planta-wrap.is-hidden { display:none !important; pointer-events:none; }
+  #tour-planta-wrap.is-panning { cursor:grabbing; }
+  #tour-planta-content { position:absolute; inset:0; }
+  #planta-img { position:absolute; display:block; max-width:none; max-height:none;
+                 user-select:none; -webkit-user-drag:none; pointer-events:none; z-index:1; }
+  #hotspots { position:absolute; inset:0; z-index:2; pointer-events:none; }
+  .planta-zoom-controls { position:absolute; top:14px; right:14px; z-index:10; display:flex; gap:8px; }
+  .planta-zoom-btn { width:36px; height:36px; border-radius:8px; border:1px solid rgba(255,255,255,0.3);
+                      background:rgba(0,0,0,0.65); color:#fff; cursor:pointer; font-size:17px;
+                      display:flex; align-items:center; justify-content:center; }
+  .planta-zoom-btn:hover { background:rgba(0,0,0,0.85); }
+  .hs-anchor { position:absolute; transform:translate(-50%,-50%); pointer-events:auto; }
+  .hotspot { position:relative; width:40px; height:40px; border-radius:50%;
+              background:var(--accent); color:#001512; font-weight:700; font-family:inherit;
+              padding:0; display:flex; align-items:center; justify-content:center;
+              border:3px solid white; cursor:pointer;
+              box-shadow:0 4px 14px rgba(0,0,0,0.5); transition:transform 0.15s; font-size:0.9rem; }
+  .hotspot:hover { transform:scale(1.15); background:var(--accent-hover); }
+  .hotspot-photos { position:absolute; left:14px; top:-22px;
+                     width:24px; height:24px; border-radius:50%;
+                     background:white; color:var(--accent); border:none; cursor:pointer;
+                     box-shadow:0 2px 6px rgba(0,0,0,0.4); display:flex; align-items:center;
+                     justify-content:center; font-size:13px; padding:0; }
+  .hotspot-photos:hover { background:#e0f2f1; }
+
+  #pano-overlay { position:absolute; inset:0; display:none; z-index:5; background:#000; }
+  #pano-overlay.open { display:block; }
+  .pano-back { position:absolute; top:14px; left:14px; z-index:8;
+                background:rgba(0,0,0,0.65); color:#fff; border:1px solid rgba(255,255,255,0.3);
+                width:40px; height:40px; border-radius:8px; cursor:pointer;
+                display:flex; align-items:center; justify-content:center; font-size:18px; }
+  .pano-photos-btn { position:absolute; top:14px; left:110px; z-index:8;
+                      background:rgba(0,0,0,0.65); color:#fff; border:1px solid rgba(255,255,255,0.3);
+                      width:40px; height:40px; border-radius:8px; cursor:pointer;
+                      display:flex; align-items:center; justify-content:center; font-size:18px; padding:0; }
+  .pano-photos-btn:hover { background:rgba(0,0,0,0.85); }
+  .pano-nav-toggle { position:absolute; top:14px; left:62px; z-index:8;
+                      background:rgba(0,0,0,0.65); color:#fff; border:1px solid rgba(255,255,255,0.3);
+                      width:40px; height:40px; border-radius:8px; cursor:pointer;
+                      display:flex; align-items:center; justify-content:center; font-size:18px; padding:0; }
+  .pano-nav-toggle:hover { background:rgba(0,0,0,0.85); }
+
+  /* Botões de navegação no chão do 360° (overlay 2D) — --pano-btn-scale pela distância na planta */
+  .pano-floor-btn { pointer-events:auto; cursor:pointer; padding:0;
+                     width:calc(26px * var(--pano-btn-scale, 1)); height:calc(26px * var(--pano-btn-scale, 1));
+                     border:none; background:transparent; border-radius:50%; }
+  .pano-floor-btn__disc { display:flex; align-items:center; justify-content:center;
+                           width:calc(26px * var(--pano-btn-scale, 1)); height:calc(26px * var(--pano-btn-scale, 1));
+                           border:1px solid rgba(255,255,255,0.65);
+                           border-radius:50%; background:rgba(0,191,156,0.5);
+                           box-shadow:0 2px 10px rgba(0,0,0,0.5);
+                           transform:perspective(420px) rotateX(74deg);
+                           transform-origin:center bottom;
+                           transition:transform 0.12s ease, background-color 0.12s ease, box-shadow 0.12s ease; }
+  .pano-floor-btn:hover .pano-floor-btn__disc { background:rgba(0,191,156,0.8);
+                                                 transform:perspective(420px) rotateX(74deg) scale(1.08);
+                                                 box-shadow:0 4px 14px rgba(0,0,0,0.62); }
+  .pano-floor-btn__dot { width:calc(9px * var(--pano-btn-scale, 1)); height:calc(9px * var(--pano-btn-scale, 1));
+                          border-radius:50%; background:#fff; opacity:0.95; }
+
+  /* Minimapa — expansão via classe .expanded (JS): congela no transporte até o 360° carregar. */
+  .minimap { position:absolute; top:16px; right:16px; width:220px; background:rgba(0,0,0,0.7);
+              border:1px solid rgba(255,255,255,0.15); border-radius:8px; padding:8px; z-index:6;
+              backdrop-filter:blur(6px); transform:scale(1); transform-origin:top right;
+              transition:transform 0.25s ease; }
+  .minimap.expanded { transform:scale(2); }
+  .minimap .lbl { color:rgba(255,255,255,0.8); font-size:0.72rem; margin-bottom:4px; padding-left:4px; }
+  .minimap canvas { width:100%; aspect-ratio:4/3; display:block; background:#000;
+                     border-radius:4px; cursor:pointer; }
+
+  /* Loader inicial (manifest grande / cards de tour) */
+  #app-loader { position:fixed; inset:0; z-index:500; display:flex; flex-direction:column;
+                 align-items:center; justify-content:center; gap:14px;
+                 background:var(--bg); transition:opacity 0.25s ease, visibility 0.25s ease; }
+  #app-loader.hidden { opacity:0; visibility:hidden; pointer-events:none; }
+  #app-loader .spinner { width:44px; height:44px; border-radius:50%;
+                         border:3px solid rgba(255,255,255,0.15);
+                         border-top-color:var(--accent); animation:spin-loader 0.75s linear infinite; }
+  #app-loader .lbl { color:var(--muted); font-size:0.85rem; letter-spacing:0.3px; }
+  @keyframes spin-loader { to { transform:rotate(360deg); } }
+
+  #tour-boot-loader { position:absolute; inset:0; z-index:4; display:none;
+                       align-items:center; justify-content:center; flex-direction:column; gap:12px;
+                       background:rgba(0,0,0,0.72); }
+  #tour-boot-loader.open { display:flex; }
+  #tour-boot-loader .spinner { width:36px; height:36px; border-radius:50%;
+                               border:3px solid rgba(255,255,255,0.15);
+                               border-top-color:var(--accent); animation:spin-loader 0.75s linear infinite; }
+
+  .empty { text-align:center; color:var(--muted); padding:80px 0; }
+  .lightbox { position:fixed; inset:0; background:rgba(0,0,0,0.95); display:none;
+               align-items:center; justify-content:center; z-index:60; }
+  .lightbox.open { display:flex; }
+  .lightbox img { max-width:95vw; max-height:95vh; object-fit:contain; border-radius:8px; }
+  .lightbox .close { position:absolute; top:18px; right:22px; background:transparent;
+                       color:#fff; border:1px solid #fff; padding:8px 16px;
+                       border-radius:8px; cursor:pointer; }
+
+  /* Galeria de fotos do hotspot — acima do tour-modal (z-index 50) e do pano */
+  #hotspot-gallery { position:fixed; inset:0; background:rgba(0,0,0,0.96); display:none;
+                      z-index:200; flex-direction:column; align-items:center; justify-content:center; }
+  #hotspot-gallery.open { display:flex; }
+  #hotspot-gallery .gallery-header { position:absolute; top:0; left:0; right:0; z-index:3;
+                                      display:flex; align-items:center; gap:14px; padding:12px 20px;
+                                      background:rgba(0,0,0,0.55); }
+  #hotspot-gallery .gallery-header strong { color:#fff; font-weight:500; flex:1; }
+  #hotspot-gallery .gallery-header .counter { color:rgba(255,255,255,0.75); font-size:0.9rem; }
+  #hotspot-gallery .gallery-header .close { background:transparent; border:1px solid #fff;
+                                             color:#fff; padding:8px 16px; border-radius:8px; cursor:pointer; }
+  #hotspot-gallery-img { max-width:95vw; max-height:85vh; object-fit:contain; border-radius:8px; z-index:1; }
+  .hotspot-gallery-nav { position:absolute; top:50%; transform:translateY(-50%); z-index:3;
+                          width:48px; height:48px; border-radius:50%; border:1px solid rgba(255,255,255,0.4);
+                          background:rgba(0,0,0,0.55); color:#fff; font-size:1.5rem; cursor:pointer;
+                          display:flex; align-items:center; justify-content:center; line-height:1; }
+  .hotspot-gallery-nav.prev { left:16px; }
+  .hotspot-gallery-nav.next { right:16px; }
+  .hotspot-gallery-nav.hidden { display:none; }
+</style>
+</head>
+<body>
+<div id="app-loader" aria-live="polite" aria-busy="true">
+  <div class="spinner" role="status" aria-label="Carregando apresentação"></div>
+  <div class="lbl">Carregando apresentação…</div>
+</div>
+<header>
+  <button class="menu-btn" data-drawer-toggle title="Menu" aria-label="Abrir menu">&#9776;</button>
+  <img class="brand-logo" src="assets/img_0001.png" alt="Santer Empreendimentos" />
+  <div class="brand-text">
+    <h1 id="header-titulo">RESIDENCIAL FUN</h1>
+    <div class="sub" id="header-sub"></div>
+  </div>
+  <nav>
+    
+    <button data-view="tours">Tour 360°</button>
+  </nav>
+</header>
+
+<div class="drawer-overlay" id="drawer-overlay"></div>
+<aside class="drawer" id="drawer">
+  <div class="drawer-head">
+    <div class="drawer-head-row">
+      <img class="brand-logo" src="assets/img_0001.png" alt="Santer Empreendimentos" />
+      <h2>Navegação</h2>
+      <button class="drawer-close" id="btn-drawer-close" title="Fechar menu">&#10005;</button>
+    </div>
+    <div class="drawer-tree-actions">
+      <button type="button" id="drawer-expand-all">Expandir tudo</button>
+      <button type="button" id="drawer-collapse-all">Recolher tudo</button>
+    </div>
+  </div>
+  <div class="drawer-body" id="drawer-body"></div>
+</aside>
+
+<main>
+  <section id="view-home">
+    <div class="hero">
+      <h2 id="ficha-nome">RESIDENCIAL FUN</h2>
+      <div class="sub" id="ficha-sub"></div>
+      <div class="desc" id="ficha-desc"></div>
+      <div class="ficha" id="ficha-itens"></div>
+    </div>
+    <div id="home-shortcuts"></div>
+  </section>
+  <section id="view-albuns" style="display:none">
+    <h2 class="section-title">Álbuns</h2>
+    <div id="albuns-list" class="albums"></div>
+  </section>
+  <section id="view-tours" style="display:none">
+    <h2 class="section-title">Tours 360°</h2>
+    <div id="tours-list" class="tour-grid"></div>
+  </section>
+</main>
+
+<div id="album-modal" class="modal">
+  <div class="modal-header">
+    <div class="left">
+      <button class="menu-btn" data-drawer-toggle title="Menu" aria-label="Abrir menu">&#9776;</button>
+      <strong id="album-modal-title"></strong>
+    </div>
+    <button class="close" onclick="fecharAlbum()">Fechar</button>
+  </div>
+  <div class="modal-body album-modal-body" id="album-modal-body"></div>
+</div>
+
+<div id="tour-modal" class="modal">
+  <div class="modal-header">
+    <div class="left">
+      <button class="menu-btn" data-drawer-toggle title="Menu" aria-label="Abrir menu">&#9776;</button>
+      <strong id="tour-modal-title"></strong>
+      <span id="tour-modal-sub" style="color:rgba(255,255,255,0.6);margin-left:10px"></span>
+    </div>
+    <button class="close" onclick="fecharTour()">Fechar</button>
+  </div>
+  <div class="modal-body">
+    <div class="tour-modal" id="tour-area">
+      <div id="tour-boot-loader" aria-hidden="true">
+        <div class="spinner" role="status" aria-label="Carregando tour"></div>
+        <div class="lbl" style="color:rgba(255,255,255,0.75);font-size:0.82rem">Carregando tour…</div>
+      </div>
+      <div id="tour-planta-wrap">
+        <div id="tour-planta-content">
+          <img id="planta-img" alt="Planta" />
+          <div id="hotspots"></div>
+        </div>
+        <div class="planta-zoom-controls">
+          <button type="button" class="planta-zoom-btn" id="planta-zoom-out" title="Zoom out">−</button>
+          <button type="button" class="planta-zoom-btn" id="planta-zoom-in" title="Zoom in">+</button>
+          <button type="button" class="planta-zoom-btn" id="planta-zoom-reset" title="Reset zoom">⟳</button>
+        </div>
+      </div>
+      <div id="pano-overlay">
+        <button class="pano-back" onclick="voltarParaPlanta()" title="Voltar para planta" aria-label="Voltar para planta">&larr;</button>
+        <button class="pano-nav-toggle" id="pano-nav-toggle" type="button" onclick="alternarBotoesNavegacaoPiso()" title="Exibir navegação interna" aria-label="Exibir navegação interna">&#128065;</button>
+        <button class="pano-photos-btn" id="pano-photos-btn" style="display:none" onclick="abrirFotosHotspotAtivo()" title="Fotos do ambiente" aria-label="Fotos do ambiente">&#128247;</button>
+        <div id="pano-viewer" style="width:100%;height:100%;"></div>
+        <div class="minimap" id="minimap-wrap">
+          <div class="lbl">Mini-mapa</div>
+          <canvas id="minimap"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="lightbox" class="lightbox" onclick="this.classList.remove('open')">
+  <button class="close">Fechar</button>
+  <img id="lightbox-img" alt="" />
+</div>
+
+<div id="hotspot-gallery" aria-hidden="true">
+  <div class="gallery-header">
+    <strong id="hotspot-gallery-title"></strong>
+    <span class="counter" id="hotspot-gallery-counter"></span>
+    <button type="button" class="close" onclick="fecharGaleriaHotspot()">Fechar</button>
+  </div>
+  <button type="button" class="hotspot-gallery-nav prev hidden" id="hotspot-gallery-prev"
+          onclick="galeriaHotspotAnterior(event)" aria-label="Imagem anterior">&#10094;</button>
+  <img id="hotspot-gallery-img" alt="" />
+  <button type="button" class="hotspot-gallery-nav next hidden" id="hotspot-gallery-next"
+          onclick="galeriaHotspotProximo(event)" aria-label="Próxima imagem">&#10095;</button>
+</div>
+
+<script id="manifest-data" type="application/json">{"projeto":{"nome":"RESIDENCIAL FUN","subtitulo":"","descricao":"","ficha":[]},"albuns":[],"tours":[{"id":"tour_ujylcytjmpmvg1lh","nome":"LAZER","planta":"assets/img_0002.jpg","hotspots":[{"id":"hs_mddi2cylmpn0dky5","x":0.40420202310753145,"y":0.5762880943057265,"titulo":"BANHEIRO MASCULINO","imagem360":"assets/img_0003.jpg","imagensVinculadas":[],"albunsVinculados":[],"orientacao":{"yawNoPanorama":4.94147793662065,"direcaoNaPlanta":1.4147734664272658}},{"id":"hs_yx32xnkampn0dq5o","x":0.404441727791361,"y":0.5083428151398199,"titulo":"BANHEIRO FEMININO","imagem360":"assets/img_0004.jpg","imagensVinculadas":[],"albunsVinculados":[],"orientacao":{"yawNoPanorama":4.704672203032159,"direcaoNaPlanta":-1.5036243308205939}},{"id":"hs_j332dd9qmpn0dwo7","x":0.3946138357543506,"y":0.5480127296838896,"titulo":"BANHEIRO PNE","imagem360":"assets/img_0005.jpg","imagensVinculadas":[],"albunsVinculados":[],"orientacao":{"yawNoPanorama":0.01558429503858,"direcaoNaPlanta":0}},{"id":"hs_7k2js2oimpn186fm","x":0.6525848583784896,"y":0.5623405946115193,"titulo":"ACADEMIA","imagem360":"assets/img_0006.jpg","imagensVinculadas":[{"id":"hsimg_glkhs4l7mppvhw89","arquivo":"assets/img_0007.png","titulo":"ACADEMIA-FUN-R00 (1)"},{"id":"hsimg_bkbipsx6mppvhwx7","arquivo":"assets/img_0008.png","titulo":"ACADEMIA-FUN-R00 (2)"},{"id":"hsimg_gjb6uq43mppvhxjq","arquivo":"assets/img_0009.png","titulo":"ACADEMIA-FUN-R00 (3)"},{"id":"hsimg_ompv8uxtmppvhy8q","arquivo":"assets/img_0010.png","titulo":"ACADEMIA-FUN-R00 (4)"}],"albunsVinculados":[],"orientacao":{"yawNoPanorama":3.141592653589793,"direcaoNaPlanta":0}},{"id":"hs_w1tk5fxbmpn1bbgr","x":0.5346087477803799,"y":0.5786006370993602,"titulo":"ADM","imagem360":"assets/img_0011.jpg","imagensVinculadas":[],"albunsVinculados":[],"orientacao":{"yawNoPanorama":6.28046775284681,"direcaoNaPlanta":0}},{"id":"hs_jbufty43mpn1hrpz","x":0.5274934110159963,"y":0.522416301825837,"titulo":"AMERICAN PUB","imagem360":"assets/img_0012.jpg","imagensVinculadas":[],"albunsVinculados":[],"orientacao":{"yawNoPanorama":1.5165652437463202,"direcaoNaPlanta":0}},{"id":"hs_w5nveigvmpn2kcvy","x":0.42978939620103873,"y":0.5826545045100685,"titulo":"ÁREAS BANHISTAS","imagem360":"assets/img_0013.jpg","imagensVinculadas":[],"albunsVinculados":[],"orientacao":{"yawNoPanorama":1.3633947149469274,"direcaoNaPlanta":1.1803088047887624}},{"id":"hs_d0a9qnegmpny01wp","x":0.35708616436197116,"y":0.5084829280964251,"titulo":"ÁREA DE FESTAS 1","imagem360":"assets/img_0014.jpg","imagensVinculadas":[],"albunsVinculados":[],"orientacao":{"yawNoPanorama":3.141592653589793,"direcaoNaPlanta":0}},{"id":"hs_fz81v57jmpny0r1w","x":0.3587161562120119,"y":0.5624340118763599,"titulo":"ÁREA DE FESTAS 2","imagem360":"assets/img_0015.jpg","imagensVinculadas":[],"albunsVinculados":[],"orientacao":{"yawNoPanorama":1.4677772477740059,"direcaoNaPlanta":1.5866927341552597}},{"id":"hs_urxqm2y0mpnzmwgr","x":0.6170229610200945,"y":0.5622485172244619,"titulo":"BANHEIRO 1","imagem360":"assets/img_0016.jpg","imagensVinculadas":[],"albunsVinculados":[],"orientacao":{"yawNoPanorama":3.141592653589793,"direcaoNaPlanta":0}},{"id":"hs_w27fkybimpnzna6a","x":0.6170229610200945,"y":0.5886501114146426,"titulo":"BANHEIRO 2","imagem360":"assets/img_0017.jpg","imagensVinculadas":[],"albunsVinculados":[],"orientacao":{"yawNoPanorama":3.141592653589793,"direcaoNaPlanta":0}},{"id":"hs_zb9ldm8umpo26djo","x":0.49011533616476455,"y":0.5779761847165819,"titulo":"BRINQUEDOTECA","imagem360":"assets/img_0018.jpg","imagensVinculadas":[],"albunsVinculados":[],"orientacao":{"yawNoPanorama":0.04889012437171536,"direcaoNaPlanta":0}},{"id":"hs_xf8kij29mpo4ygte","x":0.4829704508797158,"y":0.5187804373590285,"titulo":"BURGUER E BEER","imagem360":"assets/img_0019.jpg","imagensVinculadas":[],"albunsVinculados":[],"orientacao":{"yawNoPanorama":1.5780879329759963,"direcaoNaPlanta":0}},{"id":"hs_7y3qezg1mpobctjx","x":0.5559611953376452,"y":0.5101492618022564,"titulo":"CIRCULAÇÃO 01 - 1","imagem360":"assets/img_0020.jpg","imagensVinculadas":[],"albunsVinculados":[],"orientacao":{"yawNoPanorama":0.028072177660486433,"direcaoNaPlanta":0}},{"id":"hs_mlefz7tdmpobdf2i","x":0.5565724422814106,"y":0.5596522509088454,"titulo":"CIRCULAÇÃO 01 - 2","imagem360":"assets/img_0021.jpg","imagensVinculadas":[],"albunsVinculados":[],"orientacao":{"yawNoPanorama":4.715293880052996,"direcaoNaPlanta":0}},{"id":"hs_3p0pv1ipmpobeor2","x":0.4241752958255844,"y":0.5157303441427132,"titulo":"CIRCULAÇÃO 02 - 1","imagem360":"assets/img_0022.jpg","imagensVinculadas":[],"albunsVinculados":[],"orientacao":{"yawNoPanorama":0.005019346257726381,"direcaoNaPlanta":0}},{"id":"hs_7bsvnzbjmpobf7c4","x":0.42438698307883643,"y":0.5597081549055779,"titulo":"CIRCULAÇÃO 02 - 2","imagem360":"assets/img_0023.jpg","imagensVinculadas":[],"albunsVinculados":[],"orientacao":{"yawNoPanorama":3.141592653589793,"direcaoNaPlanta":0}},{"id":"hs_nqtw6b5xmpobfsku","x":0.46799455724875777,"y":0.5615716214633264,"titulo":"CIRCULAÇÃO 02 - 3","imagem360":"assets/img_0024.jpg","imagensVinculadas":[],"albunsVinculados":[],"orientacao":{"yawNoPanorama":1.516271596289624,"direcaoNaPlanta":0}},{"id":"hs_dd2yijr8mpocq68x","x":0.5139039321057608,"y":0.5730779141267592,"titulo":"COPA FUNCIONÁRIOS","imagem360":"assets/img_0025.jpg","imagensVinculadas":[],"albunsVinculados":[],"orientacao":{"yawNoPanorama":6.2818025130120425,"direcaoNaPlanta":0.11923424462639291}},{"id":"hs_zzp7ug47mpofh0we","x":0.5535256624516229,"y":0.585379094163313,"titulo":"DML","imagem360":"assets/img_0026.jpg","imagensVinculadas":[],"albunsVinculados":[],"orientacao":{"yawNoPanorama":4.8712889602502125,"direcaoNaPlanta":0}},{"id":"hs_bmd8ddvfmpoh5g92","x":0.44721088670660325,"y":0.5190585498154184,"titulo":"GRAB AND GO","imagem360":"assets/img_0027.jpg","imagensVinculadas":[],"albunsVinculados":[],"orientacao":{"yawNoPanorama":0.014039281827311945,"direcaoNaPlanta":0}},{"id":"hs_po869jsemppda7fg","x":0.01784485783768039,"y":0.09155953988231194,"titulo":"DELIVERY","imagem360":"assets/img_0028.jpg","imagensVinculadas":[],"albunsVinculados":[],"orientacao":{"yawNoPanorama":5.271181983810869,"direcaoNaPlanta":0}},{"id":"hs_v92j28utmppdar3a","x":0.01784485783768039,"y":0.1177745453349597,"titulo":"CORRESPONDÊNCIA","imagem360":"assets/img_0029.jpg","imagensVinculadas":[],"albunsVinculados":[],"orientacao":{"yawNoPanorama":4.725360008280588,"direcaoNaPlanta":0}},{"id":"hs_hyf5fclpmppdbiul","x":0.08387852205865581,"y":0.09915809218742723,"titulo":"GUARITA","imagem360":"assets/img_0030.jpg","imagensVinculadas":[],"albunsVinculados":[],"orientacao":{"yawNoPanorama":2.761416752097446,"direcaoNaPlanta":1.5156196259938757}},{"id":"hs_k4d71newmppdc6z7","x":0.07718883712123675,"y":0.12081396625700579,"titulo":"BANHEIRO GUARITA","imagem360":"assets/img_0031.jpg","imagensVinculadas":[],"albunsVinculados":[],"orientacao":{"yawNoPanorama":1.596016019521438,"direcaoNaPlanta":-1.6274690511426475}},{"id":"hs_hwb312fcmppwx7ku","x":0.31855103954280944,"y":0.5129491151911081,"titulo":"HALL A 1","imagem360":"assets/img_0032.jpg","imagensVinculadas":[],"albunsVinculados":[],"orientacao":{"yawNoPanorama":3.141592653589793,"direcaoNaPlanta":0}},{"id":"hs_pyawtljzmppwxpvb","x":0.30481854846892864,"y":0.5666225255645132,"titulo":"HALL A 2","imagem360":"assets/img_0033.jpg","imagensVinculadas":[],"albunsVinculados":[],"orientacao":{"yawNoPanorama":4.718786448458132,"direcaoNaPlanta":0}},{"id":"hs_k21eetaamppwyaxz","x":0.688660809393095,"y":0.5150060461835659,"titulo":"HALL B 1","imagem360":"assets/img_0034.jpg","imagensVinculadas":[],"albunsVinculados":[],"orientacao":{"yawNoPanorama":3.1358760196105684,"direcaoNaPlanta":0}},{"id":"hs_jctr43gimppwyrhn","x":0.7036075417829822,"y":0.5676360189916275,"titulo":"HALL B 2","imagem360":"assets/img_0035.jpg","imagensVinculadas":[],"albunsVinculados":[],"orientacao":{"yawNoPanorama":1.5923506066111321,"direcaoNaPlanta":0}},{"id":"hs_u38vjhcimppwzet4","x":0.5795814645051957,"y":0.5189252994777832,"titulo":"OFFICE","imagem360":"assets/img_0036.jpg","imagensVinculadas":[],"albunsVinculados":[],"orientacao":{"yawNoPanorama":0.026045480532682106,"direcaoNaPlanta":0}},{"id":"hs_a45bglzjmppwzxe3","x":0.6088388981194427,"y":0.5200450861332739,"titulo":"REUNIÃO","imagem360":"assets/img_0037.jpg","imagensVinculadas":[],"albunsVinculados":[],"orientacao":{"yawNoPanorama":0.0019242836493980375,"direcaoNaPlanta":0}}],"escala":{"pontos":[{"x":0.46356332985315957,"y":0.5531870772675241},{"x":0.4638654446567849,"y":0.48590189660572847}],"metros":5,"alturaOlhoMetros":1.6,"imagemW":8192,"imagemH":4653}}],"atualizadoEm":"2026-05-28T19:58:53.2765753Z"}</script>
+<script type="module">
+import { Viewer } from '@photo-sphere-viewer/core';
+import { MarkersPlugin } from '@photo-sphere-viewer/markers-plugin';
+
+const manifest = JSON.parse(document.getElementById('manifest-data').textContent);
+const projeto  = manifest.projeto || {};
+const albuns   = manifest.albuns  || [];
+const tours    = manifest.tours   || [];
+const TEM_ALBUNS = false;
+const TEM_TOURS  = true;
+
+// ---------- Cabeçalho + ficha home ----------
+const tituloHero = projeto.nome || document.getElementById('header-titulo').textContent;
+document.getElementById('header-titulo').textContent = tituloHero;
+document.getElementById('ficha-nome').textContent    = tituloHero;
+document.getElementById('header-sub').textContent = projeto.subtitulo || '';
+document.getElementById('ficha-sub').textContent  = projeto.subtitulo || '';
+document.getElementById('ficha-desc').textContent = projeto.descricao || '';
+const fichaWrap = document.getElementById('ficha-itens');
+(projeto.ficha || []).forEach(item => {
+  if (!item.rotulo && !item.valor) return;
+  const el = document.createElement('div');
+  el.className = 'ficha-item';
+  el.innerHTML = `<div class="rotulo">${item.rotulo || ''}</div><div class="valor">${item.valor || ''}</div>`;
+  fichaWrap.appendChild(el);
+});
+
+// ---------- Drawer ----------
+const drawer  = document.getElementById('drawer');
+const overlay = document.getElementById('drawer-overlay');
+let drawerAberto = false;
+function toggleDrawer() {
+  drawerAberto = !drawerAberto;
+  drawer.classList.toggle('open', drawerAberto);
+  overlay.classList.toggle('open', drawerAberto);
+}
+function fecharDrawer() {
+  drawerAberto = false;
+  drawer.classList.remove('open');
+  overlay.classList.remove('open');
+}
+document.querySelectorAll('[data-drawer-toggle]').forEach(b => b.addEventListener('click', (e) => { e.stopPropagation(); toggleDrawer(); }));
+document.getElementById('btn-drawer-close').addEventListener('click', fecharDrawer);
+overlay.addEventListener('click', fecharDrawer);
+
+const drawerBody  = document.getElementById('drawer-body');
+const drawerGrupos = [];
+/** tourId → { tourEl, childrenWrap, children: Map<hotspotId, el> } */
+const drawerTourRefs = new Map();
+
+function atualizarDestaqueDrawer() {
+  document.querySelectorAll('.drawer-item.active').forEach(el => el.classList.remove('active'));
+  if (!tourAtivo) return;
+  const ref = drawerTourRefs.get(tourAtivo.id);
+  if (!ref) return;
+  ref.tourEl?.classList.add('active');
+  // Destaca o hotspot sempre que ele estiver carregado — não depende do overlay estar visível,
+  // pois `abrirPano()` chamava esta função antes de aplicar `.open` ao overlay.
+  if (hotspotAtivo) {
+    ref.childrenWrap?.classList.add('open');
+    const btn = ref.childrenWrap?.querySelector('.drawer-toggle:not(.placeholder)');
+    if (btn) { btn.textContent = '▼'; btn.setAttribute('aria-expanded', 'true'); }
+    const childEl = ref.children?.get(hotspotAtivo.id);
+    if (childEl) {
+      childEl.classList.add('active');
+      // Garante que o item ativo fique visível mesmo em tours longos.
+      childEl.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' });
+    }
+  }
+}
+
+function addDrawerSection(titulo) {
+  const s = document.createElement('div');
+  s.className = 'drawer-section';
+  s.textContent = titulo;
+  drawerBody.appendChild(s);
+}
+
+function addDrawerItem(opts) {
+  const el = document.createElement('div');
+  el.className = 'drawer-item' + (opts.cls ? ' ' + opts.cls : '');
+  if (opts.toggle) {
+    el.appendChild(opts.toggle);
+  } else {
+    const ph = document.createElement('span');
+    ph.className = 'drawer-toggle placeholder';
+    ph.textContent = '▶';
+    el.appendChild(ph);
+  }
+  if (opts.num) {
+    const n = document.createElement('span');
+    n.className = 'num';
+    n.textContent = opts.num;
+    el.appendChild(n);
+  } else if (opts.icon) {
+    const i = document.createElement('span');
+    i.className = 'icon';
+    i.textContent = opts.icon;
+    el.appendChild(i);
+  }
+  const span = document.createElement('span');
+  span.textContent = opts.label;
+  el.appendChild(span);
+  el.addEventListener('click', (e) => {
+    if (e.target.closest('.drawer-toggle:not(.placeholder)')) return;
+    opts.onClick?.();
+    fecharDrawer();
+  });
+  (opts.parent || drawerBody).appendChild(el);
+  return el;
+}
+
+function addDrawerGrupo(tour, label, onParentClick) {
+  const wrap     = document.createElement('div');
+  wrap.className = 'drawer-grupo';
+  const children = document.createElement('div');
+  children.className = 'drawer-children open';
+  drawerGrupos.push({ wrap, children });
+  const childMap = new Map();
+
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'drawer-toggle';
+  btn.textContent = '▼';
+  btn.setAttribute('aria-expanded', 'true');
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const aberto = children.classList.toggle('open');
+    btn.textContent = aberto ? '▼' : '▶';
+    btn.setAttribute('aria-expanded', String(aberto));
+  });
+
+  const tourEl = addDrawerItem({ cls:'tour', icon:'⧉', label, toggle:btn, parent:wrap, onClick:onParentClick });
+
+  (tour.hotspots || []).forEach((h, i) => {
+    const childEl = addDrawerItem({
+      cls:'child', num:String(i+1), label:h.titulo||`Ambiente ${i+1}`,
+      parent:children,
+      onClick:()=>{ mostrarView('tours'); abrirTour(tour); setTimeout(()=>abrirPano(tour,h),80); },
+    });
+    childMap.set(h.id, childEl);
+  });
+
+  wrap.appendChild(children);
+  drawerBody.appendChild(wrap);
+  if (tour.id) drawerTourRefs.set(tour.id, { tourEl, childrenWrap: children, children: childMap });
+}
+
+document.getElementById('drawer-expand-all').addEventListener('click', () => {
+  drawerGrupos.forEach(({ wrap, children }) => {
+    children.classList.add('open');
+    const btn = wrap.querySelector('.drawer-toggle:not(.placeholder)');
+    if (btn) { btn.textContent='▼'; btn.setAttribute('aria-expanded','true'); }
+  });
+});
+document.getElementById('drawer-collapse-all').addEventListener('click', () => {
+  drawerGrupos.forEach(({ wrap, children }) => {
+    children.classList.remove('open');
+    const btn = wrap.querySelector('.drawer-toggle:not(.placeholder)');
+    if (btn) { btn.textContent='▶'; btn.setAttribute('aria-expanded','false'); }
+  });
+});
+
+addDrawerSection('Início');
+addDrawerItem({ icon:'⌂', label:'Apresentação', onClick:()=>mostrarView('home') });
+
+if (TEM_ALBUNS && albuns.length) {
+  addDrawerSection('Álbuns');
+  albuns.forEach(a=>addDrawerItem({
+    icon:'☰', label:a.nome||'Álbum',
+    onClick:()=>{ mostrarView('albuns'); abrirAlbum(a); },
+  }));
+}
+if (TEM_TOURS && tours.length) {
+  addDrawerSection('Tours 360°');
+  tours.forEach(t=>addDrawerGrupo(t, t.nome||'Tour', ()=>{ mostrarView('tours'); abrirTour(t); }));
+}
+
+// ---------- Atalhos na home ----------
+const shortcuts = document.getElementById('home-shortcuts');
+if (TEM_ALBUNS && albuns.length) {
+  shortcuts.insertAdjacentHTML('beforeend','<h2 class="section-title">Álbuns</h2><div id="albuns-list-home" class="albums"></div>');
+  albuns.forEach(a=>document.getElementById('albuns-list-home').appendChild(criarCardAlbum(a)));
+}
+if (TEM_TOURS && tours.length) {
+  shortcuts.insertAdjacentHTML('beforeend','<h2 class="section-title" style="margin-top:32px">Tours 360°</h2><div id="tours-list-home" class="tour-grid"></div>');
+  tours.forEach(t=>document.getElementById('tours-list-home').appendChild(criarCardTour(t)));
+}
+
+// ---------- Cards ----------
+function criarCardAlbum(a) {
+  const capa = (a.imagens&&a.imagens[0]?.arquivo)||'';
+  const card = document.createElement('div');
+  card.className = 'album';
+  card.innerHTML = `<div class="cover" style="background-image:url('${capa}')"></div>
+                    <div class="body"><h3>${a.nome||'Álbum'}</h3><p>${(a.imagens||[]).length} imagens</p></div>`;
+  card.onclick = ()=>abrirAlbum(a);
+  return card;
+}
+function criarCardTour(t) {
+  const card = document.createElement('div');
+  card.className = 'tour-card';
+  card.innerHTML = `<div class="preview" style="background-image:url('${t.planta||''}')">
+                      <span class="badge">${(t.hotspots||[]).length} ambientes</span>
+                    </div>
+                    <div class="body"><h3>${t.nome||'Tour'}</h3></div>`;
+  card.onclick = ()=>abrirTour(t);
+  return card;
+}
+if (TEM_ALBUNS) {
+  const lista = document.getElementById('albuns-list');
+  if (!albuns.length) lista.innerHTML='<div class="empty">Nenhum álbum adicionado.</div>';
+  else albuns.forEach(a=>lista.appendChild(criarCardAlbum(a)));
+}
+if (TEM_TOURS) {
+  const lista = document.getElementById('tours-list');
+  if (!tours.length) lista.innerHTML='<div class="empty">Nenhum tour configurado.</div>';
+  else tours.forEach(t=>lista.appendChild(criarCardTour(t)));
+}
+
+// ---------- Navegação principal ----------
+function mostrarView(v) {
+  document.querySelectorAll('header nav button').forEach(b=>b.classList.toggle('active',b.dataset.view===v));
+  document.getElementById('view-home').style.display   = v==='home'   ? '' : 'none';
+  document.getElementById('view-albuns').style.display = v==='albuns' ? '' : 'none';
+  document.getElementById('view-tours').style.display  = v==='tours'  ? '' : 'none';
+  fecharDrawer();
+}
+document.querySelectorAll('header nav button').forEach(btn=>btn.onclick=()=>mostrarView(btn.dataset.view));
+mostrarView('home');
+
+function esconderLoaderInicial() {
+  const loader = document.getElementById('app-loader');
+  if (!loader) return;
+  loader.classList.add('hidden');
+  loader.setAttribute('aria-busy', 'false');
+}
+requestAnimationFrame(() => requestAnimationFrame(esconderLoaderInicial));
+
+function setTourBootLoader(visivel) {
+  const el = document.getElementById('tour-boot-loader');
+  if (!el) return;
+  el.classList.toggle('open', !!visivel);
+  el.setAttribute('aria-hidden', visivel ? 'false' : 'true');
+}
+
+const plantaWrapEl = document.getElementById('tour-planta-wrap');
+
+function setModoPlantaVisivel(visivel) {
+  const wrap = document.getElementById('tour-planta-wrap');
+  if (wrap) wrap.classList.toggle('is-hidden', !visivel);
+}
+
+function ancoraCentro() {
+  const r = plantaWrapEl.getBoundingClientRect();
+  return { clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 };
+}
+
+document.getElementById('planta-zoom-in').addEventListener('click', (e) => {
+  e.stopPropagation();
+  setPlantaZoom(plantaZoom + 0.2, ancoraCentro());
+});
+document.getElementById('planta-zoom-out').addEventListener('click', (e) => {
+  e.stopPropagation();
+  setPlantaZoom(plantaZoom - 0.2, ancoraCentro());
+});
+document.getElementById('planta-zoom-reset').addEventListener('click', (e) => {
+  e.stopPropagation();
+  resetPlantaView();
+});
+
+// Zoom com âncora no cursor — o ponto sob o ponteiro permanece fixo.
+plantaWrapEl.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  const delta = e.deltaY < 0 ? 0.15 : -0.15;
+  setPlantaZoom(plantaZoom + delta, e);
+}, { passive: false });
+
+// Pan com arrastar do mouse / toque.
+const panState = { ativo: false, ix: 0, iy: 0, ipx: 0, ipy: 0, moveu: false, pointerId: null };
+
+function inicioPanPlanta(clientX, clientY) {
+  panState.ativo = true;
+  panState.ix = clientX; panState.iy = clientY;
+  panState.ipx = plantaPan.x; panState.ipy = plantaPan.y;
+  panState.moveu = false;
+  plantaWrapEl.classList.add('is-panning');
+}
+
+function movimentoPanPlanta(clientX, clientY) {
+  if (!panState.ativo) return;
+  const dx = clientX - panState.ix;
+  const dy = clientY - panState.iy;
+  if (Math.abs(dx) + Math.abs(dy) > 4) panState.moveu = true;
+  plantaPan = { x: panState.ipx + dx, y: panState.ipy + dy };
+  applyPlantaLayout();
+}
+
+function fimPanPlanta() {
+  if (!panState.ativo) return;
+  panState.ativo = false;
+  plantaWrapEl.classList.remove('is-panning');
+  // click no hotspot dispara após pointerup; adiar reset para o handler ver moveu
+  setTimeout(() => { panState.moveu = false; }, 0);
+}
+
+plantaWrapEl.addEventListener('pointerdown', (e) => {
+  // ignora se clicou em controle/hotspot
+  if (e.target.closest('.planta-zoom-controls')) return;
+  if (e.target.closest('.hotspot, .hotspot-photos')) return;
+  if (e.button !== undefined && e.button !== 0) return;
+  panState.pointerId = e.pointerId;
+  try { plantaWrapEl.setPointerCapture(e.pointerId); } catch { /* navegadores antigos */ }
+  inicioPanPlanta(e.clientX, e.clientY);
+});
+plantaWrapEl.addEventListener('pointermove', (e) => {
+  if (panState.pointerId !== e.pointerId) return;
+  movimentoPanPlanta(e.clientX, e.clientY);
+});
+const pararPan = (e) => {
+  if (panState.pointerId !== e.pointerId) return;
+  try { plantaWrapEl.releasePointerCapture(e.pointerId); } catch { /* idem */ }
+  panState.pointerId = null;
+  fimPanPlanta();
+};
+plantaWrapEl.addEventListener('pointerup', pararPan);
+plantaWrapEl.addEventListener('pointercancel', pararPan);
+
+// ---------- Album lightbox ----------
+function abrirAlbum(album) {
+  document.getElementById('album-modal-title').textContent = album.nome||'Álbum';
+  const body = document.getElementById('album-modal-body');
+  body.innerHTML='';
+  (album.imagens||[]).forEach(img=>{
+    const el=document.createElement('img');
+    el.src=img.arquivo; el.alt=img.titulo||'';
+    el.onclick=()=>abrirLightbox(img.arquivo);
+    body.appendChild(el);
+  });
+  document.getElementById('album-modal').classList.add('open');
+}
+window.fecharAlbum=()=>document.getElementById('album-modal').classList.remove('open');
+
+// ---------- Tour ----------
+let panoViewer = null;
+let tourAtivo  = null;
+let hotspotAtivo = null;
+let botoesNavegacaoPisoVisiveis = false;
+const plantaImg = new Image();
+let plantaNatural = {w:0,h:0};
+let plantaResizeObs = null;
+let plantaZoom = 1;
+let plantaPan = { x: 0, y: 0 };
+
+const clampPlantaZoom = (z) => Math.min(4, Math.max(1, z));
+
+// Zoom via dimensões reais do <img> (não transform:scale) — evita pixelização da planta e dos botões.
+function calcPlantaBaseArea() {
+  const wrap = document.getElementById('tour-planta-wrap');
+  if (!wrap || !plantaNatural.w) return null;
+  return calcAreaContain(wrap.clientWidth, wrap.clientHeight, plantaNatural.w, plantaNatural.h);
+}
+
+function hotspotPxNaPlanta(hotspot, base) {
+  const wrap = document.getElementById('tour-planta-wrap');
+  if (!wrap || !base) return { x: 0, y: 0 };
+  const cx = wrap.clientWidth / 2;
+  const cy = wrap.clientHeight / 2;
+  const imgW = base.w * plantaZoom;
+  const imgH = base.h * plantaZoom;
+  return {
+    x: cx + plantaPan.x + imgW * ((hotspot.x ?? 0.5) - 0.5),
+    y: cy + plantaPan.y + imgH * ((hotspot.y ?? 0.5) - 0.5),
+  };
+}
+
+function applyPlantaLayout() {
+  const wrap = document.getElementById('tour-planta-wrap');
+  const img = document.getElementById('planta-img');
+  const base = calcPlantaBaseArea();
+  if (!wrap || !img || !base) return;
+  const cx = wrap.clientWidth / 2;
+  const cy = wrap.clientHeight / 2;
+  const w = base.w * plantaZoom;
+  const h = base.h * plantaZoom;
+  img.style.width = w + 'px';
+  img.style.height = h + 'px';
+  img.style.left = (cx + plantaPan.x - w / 2) + 'px';
+  img.style.top = (cy + plantaPan.y - h / 2) + 'px';
+  renderHotspots();
+}
+
+// Zoom mantendo o ponto sob o cursor (ou sob o centro, se sem âncora).
+function setPlantaZoom(zNovo, anchor) {
+  const novo = clampPlantaZoom(zNovo);
+  if (novo === plantaZoom) return;
+  const wrap = document.getElementById('tour-planta-wrap');
+  if (wrap && anchor) {
+    const rect = wrap.getBoundingClientRect();
+    const cx = rect.width / 2, cy = rect.height / 2;
+    // posição do ponteiro relativa ao centro do container
+    const mx = (anchor.clientX - rect.left) - cx;
+    const my = (anchor.clientY - rect.top)  - cy;
+    const ratio = novo / plantaZoom;
+    plantaPan = {
+      x: mx * (1 - ratio) + plantaPan.x * ratio,
+      y: my * (1 - ratio) + plantaPan.y * ratio,
+    };
+  }
+  plantaZoom = novo;
+  applyPlantaLayout();
+}
+
+function resetPlantaView() {
+  plantaZoom = 1;
+  plantaPan = { x: 0, y: 0 };
+  applyPlantaLayout();
+}
+
+function abrirTour(tour) {
+  tourAtivo = tour; hotspotAtivo = null;
+  navPisoAssinatura = '';
+  document.getElementById('tour-modal-title').textContent = tour.nome||'Tour';
+  document.getElementById('tour-modal-sub').textContent   = '';
+  const wrap = document.getElementById('tour-planta-wrap');
+  const imgEl = document.getElementById('planta-img');
+  if (imgEl) imgEl.src = tour.planta || '';
+  resetPlantaView();
+  document.getElementById('tour-modal').classList.add('open');
+  document.getElementById('pano-overlay').classList.remove('open');
+  setModoPlantaVisivel(true);
+  setTourBootLoader(true);
+  const finalizarBootTour = () => {
+    applyPlantaLayout();
+    requestAnimationFrame(() => setTourBootLoader(false));
+  };
+  plantaImg.onload = () => {
+    plantaNatural={w:plantaImg.naturalWidth,h:plantaImg.naturalHeight};
+    finalizarBootTour();
+  };
+  plantaImg.src = tour.planta||'';
+  if (plantaImg.complete && plantaImg.naturalWidth) {
+    plantaNatural={w:plantaImg.naturalWidth,h:plantaImg.naturalHeight};
+    finalizarBootTour();
+  } else if (!tour.planta) {
+    finalizarBootTour();
+  }
+  if (plantaResizeObs) plantaResizeObs.disconnect();
+  plantaResizeObs = new ResizeObserver(()=>applyPlantaLayout());
+  plantaResizeObs.observe(wrap);
+  atualizarDestaqueDrawer();
+}
+
+function calcAreaContain(cw,ch,iw,ih) {
+  if (!cw||!ch||!iw||!ih) return {offsetX:0,offsetY:0,w:cw||0,h:ch||0};
+  const r1=iw/ih, r2=cw/ch;
+  let w,h;
+  if (r1>r2) {w=cw;h=cw/r1;} else {h=ch;w=ch*r1;}
+  return {offsetX:(cw-w)/2,offsetY:(ch-h)/2,w,h};
+}
+
+function renderHotspots() {
+  if (!tourAtivo) return;
+  const base = calcPlantaBaseArea();
+  const host = document.getElementById('hotspots');
+  if (!host || !base) return;
+  host.innerHTML='';
+  (tourAtivo.hotspots||[]).forEach((h,i)=>{
+    const pos = hotspotPxNaPlanta(h, base);
+
+    const anchor = document.createElement('div');
+    anchor.className='hs-anchor';
+    anchor.style.left = pos.x+'px';
+    anchor.style.top  = pos.y+'px';
+
+    const dot = document.createElement('button');
+    dot.type='button';
+    dot.className='hotspot';
+    dot.textContent = i+1;
+    dot.title = h.titulo||`Ambiente ${i+1}`;
+    dot.addEventListener('click', (e)=>{ e.stopPropagation(); if (panState.moveu) return; abrirPano(tourAtivo,h); });
+    anchor.appendChild(dot);
+
+    const temFotos=(h.imagensVinculadas?.length||0)
+      +(h.albunsVinculados||[]).reduce((a,id)=>a+((albuns.find(x=>x.id===id))?.imagens?.length||0),0);
+    if (temFotos>0) {
+      const btn=document.createElement('button');
+      btn.type='button';
+      btn.className='hotspot-photos';
+      btn.innerHTML='&#128247;';
+      btn.title='Fotos do ambiente';
+      btn.addEventListener('click', (e)=>{ e.stopPropagation(); if (panState.moveu) return; abrirFotosHotspot(h); });
+      anchor.appendChild(btn);
+    }
+
+    host.appendChild(anchor);
+  });
+}
+
+window.fecharTour=()=>{
+  document.getElementById('tour-modal').classList.remove('open');
+  fecharPano();
+  if (plantaResizeObs) {plantaResizeObs.disconnect(); plantaResizeObs=null;}
+};
+window.voltarParaPlanta=()=>{
+  document.getElementById('pano-overlay').classList.remove('open');
+  setModoPlantaVisivel(true);
+  hotspotAtivo=null;
+  navPisoAssinatura = '';
+  document.getElementById('tour-modal-sub').textContent='';
+  setTourBootLoader(false);
+  minimapView = { zoom: 1, panX: 0, panY: 0 };
+  minimapDrag = { ativo: false, pointerId: null, ix: 0, iy: 0, ipx: 0, ipy: 0, moveu: false };
+  if (panoViewer) {panoViewer.destroy(); panoViewer=null;}
+  atualizarDestaqueDrawer();
+};
+
+function normAng(a) { while(a>Math.PI) a-=2*Math.PI; while(a<-Math.PI) a+=2*Math.PI; return a; }
+
+const VIZINHO_RAIO_FRAC = 0.18;
+const VIZINHO_FOV_YAW = Math.PI * 0.55;
+const PITCH_PISO_FALLBACK = -0.38;
+const ALTURA_OLHO_DEFAULT = 1.6;
+const DISTANCIA_MIN_M = 0.6;
+const DIST_REF_BOTAO_PISO_M = 3;
+const ESCALA_BOTAO_MIN = 0.45;
+const ESCALA_BOTAO_MAX = 2.4;
+let navPisoAssinatura = '';
+
+function escalaVisualBotaoPiso(distanciaMetros) {
+  if (!distanciaMetros || distanciaMetros <= 0) return 1;
+  const d = Math.max(DISTANCIA_MIN_M, distanciaMetros);
+  const ratio = DIST_REF_BOTAO_PISO_M / d;
+  // (ref/d)^0.85 — diferença clara entre vizinho perto e longe mesmo com o achatamento
+  // do disco (perspective + rotateX), igual ao do componente React.
+  const curva = Math.pow(ratio, 0.85);
+  return Math.min(ESCALA_BOTAO_MAX, Math.max(ESCALA_BOTAO_MIN, curva));
+}
+
+function yawParaDirecaoNaPlanta(direcaoNaPlanta, orientacao) {
+  if (orientacao?.direcaoNaPlanta != null && orientacao?.yawNoPanorama != null) {
+    return orientacao.yawNoPanorama - (direcaoNaPlanta - orientacao.direcaoNaPlanta);
+  }
+  return direcaoNaPlanta + Math.PI / 2;
+}
+
+function distanciaMetrosNaPlantaTour(tour, f1, f2) {
+  const esc = tour?.escala;
+  if (!esc || !Array.isArray(esc.pontos) || esc.pontos.length < 2) return null;
+  if (!esc.metros || esc.metros <= 0) return null;
+  const imgW = Number(esc.imagemW) || 0;
+  const imgH = Number(esc.imagemH) || 0;
+  if (imgW <= 0 || imgH <= 0) return null;
+  const dxL = (esc.pontos[1].x - esc.pontos[0].x) * imgW;
+  const dyL = (esc.pontos[1].y - esc.pontos[0].y) * imgH;
+  const linhaPx = Math.hypot(dxL, dyL);
+  if (linhaPx <= 0) return null;
+  const mPorPx = esc.metros / linhaPx;
+  const dx = ((f2?.x ?? 0.5) - (f1?.x ?? 0.5)) * imgW;
+  const dy = ((f2?.y ?? 0.5) - (f1?.y ?? 0.5)) * imgH;
+  return Math.hypot(dx, dy) * mPorPx;
+}
+
+function pitchPisoParaDistancia(distanciaMetros, alturaOlhoMetros) {
+  if (!distanciaMetros || distanciaMetros <= 0) return PITCH_PISO_FALLBACK;
+  const altura = (alturaOlhoMetros && alturaOlhoMetros > 0) ? alturaOlhoMetros : ALTURA_OLHO_DEFAULT;
+  const d = Math.max(DISTANCIA_MIN_M, distanciaMetros);
+  return -Math.atan2(altura, d);
+}
+
+function filtrarVizinhosNav(hotspotAtivo, vizinhos, yawAtual) {
+  if (!hotspotAtivo) return [];
+  return vizinhos.filter(({ hotspot, yaw }) => {
+    const dx = (hotspot.x ?? 0.5) - (hotspotAtivo.x ?? 0.5);
+    const dy = (hotspot.y ?? 0.5) - (hotspotAtivo.y ?? 0.5);
+    if (Math.hypot(dx, dy) > VIZINHO_RAIO_FRAC) return false;
+    let dyaw = yaw - yawAtual;
+    while (dyaw > Math.PI) dyaw -= 2 * Math.PI;
+    while (dyaw < -Math.PI) dyaw += 2 * Math.PI;
+    return Math.abs(dyaw) <= VIZINHO_FOV_YAW / 2;
+  });
+}
+
+function calcVizinhos() {
+  if (!tourAtivo||!hotspotAtivo?.orientacao) return [];
+  return (tourAtivo.hotspots||[])
+    .filter(h=>h.id!==hotspotAtivo.id&&h.orientacao)
+    .map(h=>{
+      const dx=h.x-hotspotAtivo.x, dy=-(h.y-hotspotAtivo.y);
+      const angAlvo=Math.atan2(dy,dx);
+      const delta=angAlvo-hotspotAtivo.orientacao.direcaoNaPlanta;
+      // PSV é horário e a planta usa convenção matemática (CCW) — sinal inverso ao do cone do minimapa.
+      const yaw=hotspotAtivo.orientacao.yawNoPanorama-delta;
+      const distanciaMetros = distanciaMetrosNaPlantaTour(tourAtivo, hotspotAtivo, h);
+      return {hotspot:h,yaw,distanciaMetros};
+    });
+}
+
+function criarBotaoPiso(titulo, hotspotId, distanciaMetros) {
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'pano-floor-btn';
+  btn.setAttribute('data-hotspot-id', hotspotId || '');
+  btn.setAttribute('aria-label', titulo || 'Ambiente');
+  btn.title = titulo || 'Ambiente';
+  btn.style.setProperty('--pano-btn-scale', String(escalaVisualBotaoPiso(distanciaMetros)));
+  const disc = document.createElement('span');
+  disc.className = 'pano-floor-btn__disc';
+  disc.setAttribute('aria-hidden', 'true');
+  const dot = document.createElement('span');
+  dot.className = 'pano-floor-btn__dot';
+  disc.appendChild(dot);
+  btn.appendChild(disc);
+  return btn;
+}
+
+function atualizarNavPiso(yawAtual) {
+  if (!panoViewer) return;
+  const markers = panoViewer.getPlugin(MarkersPlugin);
+  if (!markers) return;
+  if (!botoesNavegacaoPisoVisiveis || !hotspotAtivo?.orientacao) {
+    navPisoAssinatura = '';
+    markers.clearMarkers();
+    return;
+  }
+  const yaw = yawAtual ?? panoViewer.getPosition?.().yaw ?? 0;
+  const vizinhos = filtrarVizinhosNav(hotspotAtivo, calcVizinhos(), yaw);
+  const alturaOlhoTour = tourAtivo?.escala?.alturaOlhoMetros || ALTURA_OLHO_DEFAULT;
+  // Assinatura inclui distância arredondada — re-renderiza quando a calibração muda.
+  const assinatura = vizinhos
+    .map(({ hotspot, distanciaMetros }) => `${hotspot.id}:${Math.round((distanciaMetros||0)*100)}`)
+    .sort()
+    .join(',');
+  if (assinatura === navPisoAssinatura) return;
+  navPisoAssinatura = assinatura;
+  markers.clearMarkers();
+  vizinhos.forEach(({ hotspot, yaw: yawMarcador, distanciaMetros }) => {
+    const pitch = pitchPisoParaDistancia(distanciaMetros, alturaOlhoTour);
+    const escalaBtn = escalaVisualBotaoPiso(distanciaMetros);
+    const markerSize = Math.round(38 * escalaBtn);
+    markers.addMarker({
+      id: `nav-${hotspot.id}`,
+      position: { yaw: yawMarcador, pitch },
+      element: criarBotaoPiso(hotspot.titulo, hotspot.id, distanciaMetros),
+      anchor: 'center center',
+      size: { width: markerSize, height: markerSize },
+      data: { hotspotId: hotspot.id },
+    });
+  });
+}
+
+function atualizarBotaoNavegacaoPiso() {
+  const btn = document.getElementById('pano-nav-toggle');
+  if (!btn) return;
+  btn.textContent = botoesNavegacaoPisoVisiveis ? '🙈' : '👁';
+  btn.title = botoesNavegacaoPisoVisiveis ? 'Ocultar navegação interna' : 'Exibir navegação interna';
+  btn.setAttribute('aria-label', btn.title);
+}
+
+window.alternarBotoesNavegacaoPiso = () => {
+  botoesNavegacaoPisoVisiveis = !botoesNavegacaoPisoVisiveis;
+  atualizarBotaoNavegacaoPiso();
+  atualizarNavPiso();
+};
+
+function abrirPano(tour, h) {
+  let yawInicial = 0;
+  if (hotspotAtivo && panoViewer) {
+    const yawAtual = panoViewer.getPosition?.().yaw ?? 0;
+    const orient = hotspotAtivo.orientacao;
+    const dirPlanta = orient
+      ? orient.direcaoNaPlanta - (yawAtual - orient.yawNoPanorama)
+      : yawAtual - Math.PI / 2;
+    yawInicial = yawParaDirecaoNaPlanta(dirPlanta, h.orientacao);
+  } else if (h.orientacao?.yawNoPanorama != null) {
+    yawInicial = h.orientacao.yawNoPanorama;
+  }
+  tourAtivo=tour; hotspotAtivo=h;
+  navPisoAssinatura = '';
+  if (!h.imagem360) { alert('Sem imagem 360° para este ambiente.'); return; }
+  atualizarDestaqueDrawer();
+  const jaNoPano = document.getElementById('pano-overlay').classList.contains('open');
+  if (!jaNoPano) setTourBootLoader(true);
+  setModoPlantaVisivel(false);
+  document.getElementById('pano-overlay').classList.add('open');
+  document.getElementById('tour-modal-sub').textContent=h.titulo?'· '+h.titulo:'';
+  const temFotos=(h.imagensVinculadas?.length||0)
+    +(h.albunsVinculados||[]).reduce((a,id)=>a+((albuns.find(x=>x.id===id))?.imagens?.length||0),0);
+  document.getElementById('pano-photos-btn').style.display=temFotos>0?'':'none';
+  if (!jaNoPano) {
+    minimapView = { zoom: 1, panX: 0, panY: 0 };
+    minimapDrag = { ativo: false, pointerId: null, ix: 0, iy: 0, ipx: 0, ipy: 0, moveu: false };
+  }
+  atualizarBotaoNavegacaoPiso();
+
+  if (panoViewer) {panoViewer.destroy(); panoViewer=null;}
+  panoViewer = new Viewer({
+    container: document.getElementById('pano-viewer'),
+    panorama: h.imagem360,
+    navbar: false,
+    defaultZoomLvl: 0,
+    defaultYaw: yawInicial,
+    defaultPitch: 0,
+    plugins: [[MarkersPlugin, {}]],
+  });
+  const viewerContainer = panoViewer.container;
+  if (viewerContainer) {
+    viewerContainer.addEventListener('click', (ev) => {
+      const btn = ev.target.closest('.pano-floor-btn');
+      if (!btn) return;
+      const id = btn.getAttribute('data-hotspot-id');
+      const destino = (tourAtivo.hotspots || []).find(x => x.id === id);
+      if (destino) abrirPano(tourAtivo, destino);
+    });
+    viewerContainer.addEventListener('wheel', (ev) => {
+      if (ev.target.closest('#minimap-wrap')) return;
+      ev.preventDefault();
+      const zoomAtual = panoViewer.getZoomLevel?.() ?? 0;
+      const delta = ev.deltaY < 0 ? 16 : -16;
+      const prox = Math.max(0, Math.min(100, zoomAtual + delta));
+      panoViewer.zoom?.(prox);
+    }, { passive: false });
+  }
+  panoViewer.addEventListener('select-marker', ({ marker }) => {
+    const id = marker?.data?.hotspotId;
+    if (!id) return;
+    const destino = (tourAtivo.hotspots || []).find(x => x.id === id);
+    if (destino) abrirPano(tourAtivo, destino);
+  });
+  panoViewer.addEventListener('position-updated', ({position})=>{
+    const yaw=position?.yaw??0;
+    atualizarNavPiso(yaw);
+    desenharMinimapa(yaw);
+  });
+  panoViewer.addEventListener('ready', ()=>{
+    panoViewer.rotate?.({ yaw: yawInicial, pitch: 0 });
+    atualizarNavPiso(yawInicial);
+    desenharMinimapa(yawInicial);
+    minimapFrozenUntilLoad = false;
+    atualizarMinimapEscala();
+    setTourBootLoader(false);
+  });
+}
+
+window.fecharPano=window.voltarParaPlanta;
+
+// ---------- Minimapa ----------
+const minimapImg = new Image();
+let minimapNat = {w:0,h:0};
+let minimapView = { zoom: 1, panX: 0, panY: 0 };
+let minimapDrag = { ativo: false, pointerId: null, ix: 0, iy: 0, ipx: 0, ipy: 0, moveu: false };
+function calcMaxMinimapZoom() {
+  if (!minimapNat.w || !minimapBaseArea) return 12;
+  const ratio = Math.max(minimapNat.w / minimapBaseArea.w, minimapNat.h / minimapBaseArea.h);
+  return Math.max(6, Math.min(24, Math.ceil(ratio)));
+}
+const clampMinimapZoom = (z) => Math.min(calcMaxMinimapZoom(), Math.max(1, z));
+let minimapBaseArea = null;
+let minimapPointerInside = false;
+let minimapFrozenUntilLoad = false;
+function atualizarMinimapEscala() {
+  const wrap = document.getElementById('minimap-wrap');
+  if (!wrap) return;
+  wrap.classList.toggle('expanded', minimapPointerInside || minimapFrozenUntilLoad);
+}
+
+// Coords do canvas a partir de um MouseEvent — corrige o `transform: scale(2)` do
+// hover. Mouse vem em coords visuais; o desenho usa coords de layout (clientWidth).
+function minimapFatorVisual() {
+  const canvas = document.getElementById('minimap');
+  if (!canvas) return 1;
+  const r = canvas.getBoundingClientRect();
+  const layout = Math.max(1, canvas.clientWidth);
+  return r.width / layout || 1;
+}
+function minimapCoordsEvento(e) {
+  const canvas = document.getElementById('minimap');
+  const r = canvas.getBoundingClientRect();
+  const escala = minimapFatorVisual();
+  return { x: (e.clientX - r.left) / escala, y: (e.clientY - r.top) / escala };
+}
+
+// Zoom com âncora no cursor — mesma lógica da planta geral (pan relativo ao centro).
+function setMinimapZoom(zNovo, clientX, clientY) {
+  const canvas = document.getElementById('minimap');
+  if (!canvas) return;
+  const escala = minimapFatorVisual();
+  const r = canvas.getBoundingClientRect();
+  const layoutW = Math.max(1, canvas.clientWidth);
+  const layoutH = Math.max(1, canvas.clientHeight);
+  const cx = layoutW / 2;
+  const cy = layoutH / 2;
+  const novo = clampMinimapZoom(zNovo);
+  if (novo === minimapView.zoom) return;
+  const mx = (clientX - r.left) / escala - cx;
+  const my = (clientY - r.top) / escala - cy;
+  const ratio = novo / minimapView.zoom;
+  minimapView = {
+    zoom: novo,
+    panX: mx * (1 - ratio) + minimapView.panX * ratio,
+    panY: my * (1 - ratio) + minimapView.panY * ratio,
+  };
+}
+
+function inicMinimapa() {
+  if (!tourAtivo?.planta) return;
+  minimapImg.onload=()=>{minimapNat={w:minimapImg.naturalWidth,h:minimapImg.naturalHeight};desenharMinimapa(0);};
+  minimapImg.src=tourAtivo.planta;
+  if (minimapImg.complete&&minimapImg.naturalWidth)
+    minimapNat={w:minimapImg.naturalWidth,h:minimapImg.naturalHeight};
+}
+function desenharMinimapa(yaw) {
+  const canvas=document.getElementById('minimap');
+  if (!canvas||!tourAtivo) return;
+  const ctx=canvas.getContext('2d');
+  if (!minimapNat.w) inicMinimapa();
+  // Usa clientWidth/Height (layout) — invariante ao `transform: scale(2)` do
+  // hover; evita o desenho “zoomar/repanorâmica” quando o hover transita.
+  const cssW=Math.max(1,canvas.clientWidth);
+  const cssH=Math.max(1,canvas.clientHeight);
+  const dpr=window.devicePixelRatio||1;
+  const backing=Math.max(dpr,Math.min(4,minimapView.zoom*dpr*0.85));
+  const bufW=Math.max(1,Math.round(cssW*backing));
+  const bufH=Math.max(1,Math.round(cssH*backing));
+  if (canvas.width!==bufW||canvas.height!==bufH) {
+    canvas.width=bufW;
+    canvas.height=bufH;
+  }
+  ctx.setTransform(backing,0,0,backing,0,0);
+  ctx.clearRect(0,0,cssW,cssH);
+  ctx.fillStyle='#000'; ctx.fillRect(0,0,cssW,cssH);
+  if (!minimapNat.w) return;
+  const area=calcAreaContain(cssW,cssH,minimapNat.w,minimapNat.h);
+  minimapBaseArea=area;
+  const centerX = cssW / 2;
+  const centerY = cssH / 2;
+  const drawW = area.w * minimapView.zoom;
+  const drawH = area.h * minimapView.zoom;
+  const drawX = centerX - (drawW / 2) + minimapView.panX;
+  const drawY = centerY - (drawH / 2) + minimapView.panY;
+  ctx.drawImage(minimapImg,drawX,drawY,drawW,drawH);
+  if (!hotspotAtivo) return;
+  const cx=drawX+(hotspotAtivo.x||0)*drawW;
+  const cy=drawY+(hotspotAtivo.y||0)*drawH;
+  const orient=hotspotAtivo.orientacao;
+  // PSV: yaw horário; na planta o cone gira no sentido oposto (igual plantaCone.js).
+  const dirPlanta=orient
+    ? orient.direcaoNaPlanta-(yaw-orient.yawNoPanorama)
+    : yaw-Math.PI/2;
+  const fov=Math.PI/2.2;
+  const raio=Math.min(drawW,drawH)*0.35;
+  ctx.beginPath();
+  ctx.moveTo(cx,cy);
+  ctx.arc(cx,cy,raio,-dirPlanta-fov/2,-dirPlanta+fov/2);
+  ctx.closePath();
+  const grad=ctx.createRadialGradient(cx,cy,0,cx,cy,raio);
+  grad.addColorStop(0,'rgba(0,191,156,0.7)');
+  grad.addColorStop(1,'rgba(0,191,156,0)');
+  ctx.fillStyle=grad; ctx.fill();
+  (tourAtivo.hotspots||[]).forEach(h=>{
+    if (h.id===hotspotAtivo.id) return;
+    const px=drawX+(h.x||0)*drawW, py=drawY+(h.y||0)*drawH;
+    ctx.beginPath(); ctx.arc(px,py,5,0,Math.PI*2);
+    ctx.fillStyle='rgba(255,255,255,0.85)'; ctx.fill();
+    ctx.lineWidth=1.5; ctx.strokeStyle='rgba(0,0,0,0.5)'; ctx.stroke();
+  });
+  ctx.beginPath(); ctx.arc(cx,cy,7,0,Math.PI*2);
+  ctx.fillStyle='#00bf9c'; ctx.fill();
+  ctx.lineWidth=2; ctx.strokeStyle='white'; ctx.stroke();
+}
+
+const minimapWrap = document.getElementById('minimap-wrap');
+minimapWrap.addEventListener('mouseenter', () => {
+  minimapPointerInside = true;
+  atualizarMinimapEscala();
+});
+minimapWrap.addEventListener('mouseleave', () => {
+  minimapPointerInside = false;
+  atualizarMinimapEscala();
+});
+
+document.getElementById('minimap').addEventListener('click',(e)=>{
+  if (minimapDrag.moveu) return;
+  if (!tourAtivo) return;
+  const canvas=e.currentTarget;
+  const layoutW = Math.max(1, canvas.clientWidth);
+  const layoutH = Math.max(1, canvas.clientHeight);
+  const { x: px, y: py } = minimapCoordsEvento(e);
+  const area=calcAreaContain(layoutW,layoutH,minimapNat.w,minimapNat.h);
+  const drawW = area.w * minimapView.zoom;
+  const drawH = area.h * minimapView.zoom;
+  const drawX = (layoutW / 2) - (drawW / 2) + minimapView.panX;
+  const drawY = (layoutH / 2) - (drawH / 2) + minimapView.panY;
+  let melhor=null, dMin=Infinity;
+  (tourAtivo.hotspots||[]).forEach(h=>{
+    const hx=drawX+(h.x||0)*drawW, hy=drawY+(h.y||0)*drawH;
+    const d=Math.hypot(hx-px,hy-py);
+    if (d<dMin) {dMin=d; melhor=h;}
+  });
+  if (melhor&&dMin<30&&melhor.id!==hotspotAtivo?.id) {
+    minimapFrozenUntilLoad = true;
+    atualizarMinimapEscala();
+    abrirPano(tourAtivo,melhor);
+  }
+});
+
+document.getElementById('minimap').addEventListener('wheel', (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  const passo = Math.max(0.45, minimapView.zoom * 0.18);
+  const delta = e.deltaY < 0 ? passo : -passo;
+  setMinimapZoom(minimapView.zoom + delta, e.clientX, e.clientY);
+  const yaw = panoViewer?.getPosition?.().yaw ?? 0;
+  desenharMinimapa(yaw);
+}, { passive: false });
+
+document.getElementById('minimap').addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  const { x, y } = minimapCoordsEvento(e);
+  minimapDrag = {
+    ativo: true,
+    pointerId: e.pointerId,
+    ix: x,
+    iy: y,
+    ipx: minimapView.panX,
+    ipy: minimapView.panY,
+    moveu: false,
+  };
+  try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* no-op */ }
+});
+document.getElementById('minimap').addEventListener('pointermove', (e) => {
+  if (!minimapDrag.ativo || minimapDrag.pointerId !== e.pointerId) return;
+  e.preventDefault();
+  e.stopPropagation();
+  const { x, y } = minimapCoordsEvento(e);
+  const dx = x - minimapDrag.ix;
+  const dy = y - minimapDrag.iy;
+  if (Math.abs(dx) + Math.abs(dy) > 3) minimapDrag.moveu = true;
+  minimapView.panX = minimapDrag.ipx + dx;
+  minimapView.panY = minimapDrag.ipy + dy;
+  const yaw = panoViewer?.getPosition?.().yaw ?? 0;
+  desenharMinimapa(yaw);
+});
+const fimDragMinimap = (e) => {
+  if (minimapDrag.pointerId !== e.pointerId) return;
+  e.preventDefault();
+  e.stopPropagation();
+  try { e.currentTarget.releasePointerCapture(e.pointerId); } catch { /* no-op */ }
+  minimapDrag.ativo = false;
+  minimapDrag.pointerId = null;
+  setTimeout(() => { minimapDrag.moveu = false; }, 0);
+};
+document.getElementById('minimap').addEventListener('pointerup', fimDragMinimap);
+document.getElementById('minimap').addEventListener('pointercancel', fimDragMinimap);
+
+// ---------- Galeria de fotos do hotspot (sobre planta / 360°) ----------
+let galeriaHotspotImagens = [];
+let galeriaHotspotIndice = 0;
+
+function renderGaleriaHotspot() {
+  const imgs = galeriaHotspotImagens;
+  if (!imgs.length) return;
+  const atual = imgs[galeriaHotspotIndice];
+  document.getElementById('hotspot-gallery-img').src = atual.src;
+  document.getElementById('hotspot-gallery-img').alt = atual.titulo || '';
+  document.getElementById('hotspot-gallery-counter').textContent =
+    (galeriaHotspotIndice + 1) + ' / ' + imgs.length;
+  const showNav = imgs.length > 1;
+  document.getElementById('hotspot-gallery-prev').classList.toggle('hidden', !showNav);
+  document.getElementById('hotspot-gallery-next').classList.toggle('hidden', !showNav);
+}
+
+function abrirFotosHotspot(h) {
+  const imgs = [];
+  (h.imagensVinculadas || []).forEach(x => {
+    if (x?.arquivo) imgs.push({ src: x.arquivo, titulo: x.titulo || '' });
+  });
+  (h.albunsVinculados || []).forEach(id => {
+    const a = albuns.find(x => x.id === id);
+    (a?.imagens || []).forEach(x => {
+      if (x?.arquivo) imgs.push({ src: x.arquivo, titulo: x.titulo || a?.nome || '' });
+    });
+  });
+  if (!imgs.length) return;
+  galeriaHotspotImagens = imgs;
+  galeriaHotspotIndice = 0;
+  document.getElementById('hotspot-gallery-title').textContent = h.titulo || 'Ambiente';
+  renderGaleriaHotspot();
+  const el = document.getElementById('hotspot-gallery');
+  el.classList.add('open');
+  el.setAttribute('aria-hidden', 'false');
+}
+window.fecharGaleriaHotspot = () => {
+  const el = document.getElementById('hotspot-gallery');
+  el.classList.remove('open');
+  el.setAttribute('aria-hidden', 'true');
+  galeriaHotspotImagens = [];
+  galeriaHotspotIndice = 0;
+};
+window.galeriaHotspotAnterior = (e) => {
+  e?.stopPropagation();
+  if (galeriaHotspotImagens.length < 2) return;
+  galeriaHotspotIndice = (galeriaHotspotIndice - 1 + galeriaHotspotImagens.length) % galeriaHotspotImagens.length;
+  renderGaleriaHotspot();
+};
+window.galeriaHotspotProximo = (e) => {
+  e?.stopPropagation();
+  if (galeriaHotspotImagens.length < 2) return;
+  galeriaHotspotIndice = (galeriaHotspotIndice + 1) % galeriaHotspotImagens.length;
+  renderGaleriaHotspot();
+};
+window.abrirFotosHotspotAtivo = () => hotspotAtivo && abrirFotosHotspot(hotspotAtivo);
+document.addEventListener('keydown', (e) => {
+  const g = document.getElementById('hotspot-gallery');
+  if (!g?.classList.contains('open')) return;
+  if (e.key === 'Escape') fecharGaleriaHotspot();
+  if (e.key === 'ArrowLeft') galeriaHotspotAnterior();
+  if (e.key === 'ArrowRight') galeriaHotspotProximo();
+});
+
+// ---------- Lightbox ----------
+function abrirLightbox(src) {
+  document.getElementById('lightbox-img').src=src;
+  document.getElementById('lightbox').classList.add('open');
+}
+</script>
+</body>
+</html>
